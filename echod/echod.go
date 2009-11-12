@@ -10,6 +10,8 @@ func Err(format string, v ...) {
 }
 
 func Handler(conn net.Conn) {
+    defer conn.Close();
+
     buffer := make([]byte, 24);
     for {
         l, e := conn.Read(buffer);
@@ -17,13 +19,12 @@ func Handler(conn net.Conn) {
         case e == nil:
             conn.Write(buffer[0:l])
         case e == os.EOF:
-            break;
+            return;
         case e != os.EAGAIN:
             Err("Err on receiving a header (%s)", e);
-            break;
+            return;
         }
     }
-    conn.Close();
 }
 
 func main() {

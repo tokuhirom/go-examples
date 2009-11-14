@@ -1,4 +1,5 @@
 *.8
+map/map
 fib/fib
 fizzbuzz/fizzbuzz
 httpd/httpd

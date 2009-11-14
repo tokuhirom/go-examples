@@ -1,0 +1,39 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use File::Spec;
+
+if (@ARGV != 1) {
+    die "Usage: $0 proj\n"
+}
+
+my $proj = shift @ARGV;
+
+mkdir $proj;
+chdir $proj;
+
+write_file('Makefile', <<"...");
+include \$(GOROOT)/src/Make.\$(GOARCH)
+
+TARG=$proj
+GOFILES=$proj.go
+
+include \$(GOROOT)/src/Make.cmd
+...
+
+write_file("${proj}.go", <<"...");
+package main
+import ( "fmt"; );
+
+func main() {
+    fmt.Printf("ok\\n");
+}
+...
+
+sub write_file {
+    my ($fname, $content) = @_;
+    open my $fh, '>', $fname or die "$fname: $!";
+    print $fh $content;
+    close $fh;
+}
+

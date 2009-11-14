@@ -41,7 +41,10 @@ func main() {
 
         // reader thread
         go func() {
-            defer conn.Close();
+            defer func () {
+                conn.Close();
+                chan_for[conn] = nil, false;
+            }();
 
             buffer := make([]byte, 24);
             for {

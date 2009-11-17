@@ -8,7 +8,7 @@ import (
     "flag";
     "log";
     "container/vector";
-    "os";
+    "bytes";
 );
 
 var addr = flag.String("addr", "0.0.0.0:1718", "http service address")
@@ -17,18 +17,10 @@ type tmplParams struct {
     msgs string;
 };
 
-type stringIO struct {
-    buf string;
-};
-func (p *stringIO) Write(f []byte)(n int, err os.Error) {
-    p.buf += string(f);
-    return len(f), nil;
-}
-
 func html_escape(src string) string {
-    sio := new(stringIO);
+    sio := new(bytes.Buffer);
     template.HTMLEscape(sio, strings.Bytes(src));
-    return sio.buf;
+    return sio.String();
 }
 
 func main() {

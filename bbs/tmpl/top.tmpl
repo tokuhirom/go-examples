@@ -18,7 +18,13 @@
             </form>
         </div>
         <div class="span-24 last">
-            {msgs}
+            <ul>
+            {.repeated section msgs}
+                {.section @}
+                    <li>{@|html}</li>
+                {.end}
+            {.end}
+            </ul>
         </div>
         <hr />
         <div class="span-24 last footer">

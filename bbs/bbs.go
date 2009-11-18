@@ -1,4 +1,5 @@
 package main
+
 import (
     "fmt";
     "template";
@@ -9,6 +10,19 @@ import (
     "container/vector";
     "sqlite3";
 );
+
+func InitTables(dbh *sqlite3.Handle) {
+    st,err := dbh.Prepare("CREATE TABLE IF NOT EXISTS entry (id INTEGER PRIMARY KEY, body VARCHAR(255));");
+    if (err != "") {
+        log.Exit(err);
+    }
+    if st.Step() != sqlite3.SQLITE_DONE {
+        log.Exit(dbh.ErrMsg());
+    }
+    if st.Finalize() != sqlite3.SQLITE_OK {
+        log.Exit(dbh.ErrMsg());
+    }
+}
 
 var addr = flag.String("addr", "0.0.0.0:1718", "http service address")
 
@@ -23,16 +37,7 @@ func main() {
     dbh.Open("bbs.db");
     defer dbh.Close();
 
-    st,err := dbh.Prepare("CREATE TABLE IF NOT EXISTS entry (id INTEGER PRIMARY KEY, body VARCHAR(255));");
-    if (err != "") {
-        log.Exit(err);
-    }
-    if st.Step() != sqlite3.SQLITE_DONE {
-        log.Exit(dbh.ErrMsg());
-    }
-    if st.Finalize() != sqlite3.SQLITE_OK {
-        log.Exit(dbh.ErrMsg());
-    }
+    InitTables(dbh);
 
     flag.Parse();
     templ := func () *template.Template {
@@ -45,29 +50,31 @@ func main() {
 
     http.Handle("/", http.HandlerFunc(func(c *http.Conn, req *http.Request) {
         params := new(struct { msgs []string });
-        st,err = dbh.Prepare("SELECT * from entry ORDER BY id DESC limit 30;");
-        if err != "" {
-            log.Exit(err);
-        }
         storage := new(vector.StringVector);
-        func () {
-            for {
-                rv := st.Step();
-                switch {
-                case rv==sqlite3.SQLITE_DONE:
-                    return;
-                case rv==sqlite3.SQLITE_ROW:
-                    body := st.ColumnText(1);
-                    storage.Push(body);
-                default:
-                    println(rv);
-                    log.Exit(dbh.ErrMsg());
+        func() {
+            st,err := dbh.Prepare("SELECT * from entry ORDER BY id DESC limit 30;");
+            func () {
+                if err != "" {
+                    log.Exit(err);
                 }
-            };
+                for {
+                    rv := st.Step();
+                    switch {
+                    case rv==sqlite3.SQLITE_DONE:
+                        return;
+                    case rv==sqlite3.SQLITE_ROW:
+                        body := st.ColumnText(1);
+                        storage.Push(body);
+                    default:
+                        println(rv);
+                        log.Exit(dbh.ErrMsg());
+                    }
+                };
+            }();
+            if st.Finalize() != sqlite3.SQLITE_OK {
+                log.Exit(dbh.ErrMsg());
+            }
         }();
-        if st.Finalize() != sqlite3.SQLITE_OK {
-            log.Exit(dbh.ErrMsg());
-        }
         params.msgs = storage.Data();
         err := templ.Execute(params, c);
         if err != nil {
@@ -78,7 +85,7 @@ func main() {
         req.ParseForm();
 
         body := req.Form["body"][0];
-        st,err = dbh.Prepare("INSERT INTO entry (body) VALUES (?)");
+        st,err := dbh.Prepare("INSERT INTO entry (body) VALUES (?)");
         if err != "" {
             log.Exit(err);
         }

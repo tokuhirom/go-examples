@@ -27,8 +27,12 @@ func main() {
     if (err != "") {
         log.Exit(err);
     }
-    st.Step();
-    st.Finalize();
+    if st.Step() != sqlite3.SQLITE_DONE {
+        log.Exit(dbh.ErrMsg());
+    }
+    if st.Finalize() != sqlite3.SQLITE_OK {
+        log.Exit(dbh.ErrMsg());
+    }
 
     flag.Parse();
     templ := func () *template.Template {
@@ -61,7 +65,9 @@ func main() {
                 }
             };
         }();
-        st.Finalize();
+        if st.Finalize() != sqlite3.SQLITE_OK {
+            log.Exit(dbh.ErrMsg());
+        }
         params.msgs = storage.Data();
         err := templ.Execute(params, c);
         if err != nil {
@@ -79,8 +85,12 @@ func main() {
         if st.BindText(1, body) != sqlite3.SQLITE_OK {
             log.Exit("cannot bind: ", dbh.ErrMsg());
         }
-        st.Step();
-        st.Finalize();
+        if st.Step() != sqlite3.SQLITE_DONE {
+            log.Exit(dbh.ErrMsg());
+        }
+        if st.Finalize() != sqlite3.SQLITE_OK {
+            log.Exit(dbh.ErrMsg());
+        }
 
         http.Redirect(c, "/", 302);
     }));

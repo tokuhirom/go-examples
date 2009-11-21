@@ -4,11 +4,11 @@ import (
     "http";
     "log";
     "net";
+    "./arith";
 );
-import . "arith";
 
 func main() {
-    arith := new(Arith);
+    arith := new(arith.Arith);
     rpc.Register(arith);
     rpc.HandleHTTP();
     l, e := net.Listen("tcp", ":1234");
@@ -17,8 +17,3 @@ func main() {
     }
     http.Serve(l, nil);
 }
-/*
-8g -o arith.8 arith.go
-gopack grc arith.a arith.8
-8g -I . rpc.go
-*/

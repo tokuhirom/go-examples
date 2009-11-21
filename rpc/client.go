@@ -3,16 +3,16 @@ import (
     "rpc";
     "log";
     "fmt";
+    "./arith";
 );
-import . "arith";
 
 func main() {
     client, err := rpc.DialHTTP("tcp", "localhost:1234");
     if err != nil {
         log.Exit("dialing:", err);
     }
-    args := &Args{7,8};
-    reply := new(Reply);
+    args := &arith.Args{7,8};
+    reply := new(arith.Reply);
     err = client.Call("Arith.Add", args, reply);
     if err != nil {
         log.Exit("arith error:", err);

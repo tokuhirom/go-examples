@@ -4,21 +4,21 @@ TARG=rpc
 
 all: server client
 
-server: server.8 arith.a
+server: server.8
 	$(LD) -o server server.$(O)
 
-server.8: server.go arith.a
+server.8: server.go arith.$(O)
 	$(GC) -I. -o server.$(O) server.go
 
-client: client.8 arith.a
+client: client.8
 	$(LD) -o client client.$(O)
 
-client.8: client.go arith.a
+client.8: client.go arith.$(O)
 	$(GC) -I. -o client.$(O) client.go
 
-arith.a: arith.$(O)
-	gopack grc arith.a arith.$(O)
-
 arith.8: arith.go
-	$(GC) -o arith.8 arith.go
+	$(GC) -I. -o arith.$(O) arith.go
+
+clean:
+	rm -f *.$(O) *.out server client
 

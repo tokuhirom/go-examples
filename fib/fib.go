@@ -1,5 +1,9 @@
 package main
-import fmt "fmt"
+import (
+    "os";
+    "strconv";
+    "log";
+);
 
 func fib(i int) int {
     if i <= 2 {
@@ -9,5 +13,14 @@ func fib(i int) int {
 }
 
 func main() {
-    fmt.Printf("%d\n", fib(10));
+    if len(os.Args) != 2 {
+        log.Exit("Usage: " + os.Args[0] + " n");
+    }
+    i, err := strconv.Atoi(os.Args[1]);
+    if err != nil {
+        log.Exit(err);
+    }
+    res := fib(i);
+    println(res);
 }
+

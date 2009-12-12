@@ -4,6 +4,9 @@ TARG=rpc
 
 all: server client
 
+TARG=$proj
+GOFILES=$proj.go
+
 server: server.8
 	$(LD) -o server server.$(O)
 

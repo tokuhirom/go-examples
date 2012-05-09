@@ -1,25 +1,30 @@
-// ref. http://mattn.kaoriya.net/software/lang/go/20091112002814.htm
-
 package main
 
 import (
-    "fmt";
-    "json";
-    "io";
-    "http";
+	"fmt"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
 )
 
-func main() {
-    r, _, err := http.Get("http://twitter.com/statuses/public_timeline.json");
-    if err == nil {
-        b, _ := io.ReadAll(r.Body);
-        j, _, _ := json.StringToJson(string(b));
-        for i := 0; i < j.Len(); i++ {
-        data := j.Elem(i);
-        fmt.Printf("%s: %s\n",
-            data.Get("user").Get("screen_name"),
-            data.Get("text"));
-        }
-    }
+type User struct {
+	Screen_name string
 }
 
+type Twit struct {
+	User User
+	Text string
+}
+
+func main() {
+	response, err := http.Get("http://twitter.com/statuses/public_timeline.json")
+	if err == nil {
+		body, _ := ioutil.ReadAll(response.Body)
+		var twits []Twit
+		json.Unmarshal(body, &twits)
+
+		for _, twit := range twits {
+			fmt.Printf("%s: %s\n", twit.User.Screen_name, twit.Text)
+		}
+	}
+}
